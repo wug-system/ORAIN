@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORAIN - Premium AI Prompts Marketplace</title>
+    <meta name="description" content="Discover, purchase, and master AI prompts crafted by professionals. Boost your productivity and creativity.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        body {
+            background: #000;
+            overflow-x: hidden;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { ShoppingCart, Search, Star, Heart, User, Menu, X, Filter, ChevronRight, Eye, Download, Clock, TrendingUp, Sparkles, LogOut, CreditCard, Package, Settings, Bell } = lucide;
+
+        // Storage Helper (menggunakan localStorage browser)
+        const storage = {
+            get: (key) => {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : null;
+                } catch (error) {
+                    console.log('Error loading data:', error);
+                    return null;
+                }
+            },
+            set: (key, value) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                }
+            },
+            delete: (key) => {
+                try {
+                    localStorage.removeItem(key);
+                } catch (error) {
+                    console.error('Error deleting data:', error);
+                }
+            }
+        };
+
+        const OrainPlatform = () => {
+            // State Management
+            const [currentPage, setCurrentPage] = useState('home');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('all');
+            const [cart, setCart] = useState([]);
+            const [wishlist, setWishlist] = useState([]);
+            const [user, setUser] = useState(null);
+            const [selectedPrompt, setSelectedPrompt] = useState(null);
+            const [showMobileMenu, setShowMobileMenu] = useState(false);
+            const [sortBy, setSortBy] = useState('popular');
+            const [priceRange, setPriceRange] = useState([0, 500000]);
+            const [reviews, setReviews] = useState({});
+            const [userReview, setUserReview] = useState({ rating: 5, comment: '' });
+
+            // Load data from storage
+            useEffect(() => {
+                loadData();
+            }, []);
+
+            const loadData = () => {
+                const cartData = storage.get('orain-cart');
+                const wishlistData = storage.get('orain-wishlist');
+                const userData = storage.get('orain-user');
+                const reviewsData = storage.get('orain-reviews');
+
+                if (cartData) setCart(cartData);
+                if (wishlistData) setWishlist(wishlistData);
+                if (userData) setUser(userData);
+                if (reviewsData) setReviews(reviewsData);
+            };
+
+            // Save to storage
+            const saveCart = (newCart) => {
+                setCart(newCart);
+                storage.set('orain-cart', newCart);
+            };
+
+            const saveWishlist = (newWishlist) => {
+                setWishlist(newWishlist);
+                storage.set('orain-wishlist', newWishlist);
+            };
+
+            const saveUser = (newUser) => {
+                setUser(newUser);
+                storage.set('orain-user', newUser);
+            };
+
+            const saveReviews = (newReviews) => {
+                setReviews(newReviews);
+                storage.set('orain-reviews', newReviews);
+            };
+
+            // Sample Prompts Data
+            const prompts = [
+                {
+                    id: 1,
+                    title: "SEO Blog Writer Pro",
+                    description: "Generate SEO-optimized blog posts with perfect structure, keywords, and engaging content",
+                    category: "content",
+                    price: 99000,
+                    rating: 4.8,
+                    reviews: 156,
+                    author: "ContentMaster",
+                    image: "📝",
+                    tags: ["SEO", "Blog", "Content"],
+                    sales: 1250,
+                    featured: true
+                },
+                {
+                    id: 2,
+                    title: "Instagram Caption Generator",
+                    description: "Create viral Instagram captions with hashtags and emojis for maximum engagement",
+                    category: "social-media",
+                    price: 49000,
+                    rating: 4.9,
+                    reviews: 342,
+                    author: "SocialGenius",
+                    image: "📱",
+                    tags: ["Instagram", "Social", "Marketing"],
+                    sales: 2100,
+                    featured: true
+                },
+                {
+                    id: 3,
+                    title: "Code Documentation Master",
+                    description: "Automatically generate comprehensive documentation for your code projects",
+                    category: "development",
+                    price: 149000,
+                    rating: 4.7,
+                    reviews: 89,
+                    author: "DevPro",
+                    image: "💻",
+                    tags: ["Code", "Documentation", "Dev"],
+                    sales: 567,
+                    featured: false
+                },
+                {
+                    id: 4,
+                    title: "Product Description Creator",
+                    description: "Write compelling product descriptions that convert browsers into buyers",
+                    category: "ecommerce",
+                    price: 79000,
+                    rating: 4.6,
+                    reviews: 203,
+                    author: "EcomExpert",
+                    image: "🛍️",
+                    tags: ["E-commerce", "Product", "Sales"],
+                    sales: 890,
+                    featured: true
+                },
+                {
+                    id: 5,
+                    title: "Email Marketing Wizard",
+                    description: "Craft high-converting email campaigns with proven templates and strategies",
+                    category: "marketing",
+                    price: 129000,
+                    rating: 4.9,
+                    reviews: 445,
+                    author: "MarketingPro",
+                    image: "📧",
+                    tags: ["Email", "Marketing", "Conversion"],
+                    sales: 1678,
+                    featured: true
+                },
+                {
+                    id: 6,
+                    title: "AI Art Prompt Generator",
+                    description: "Create stunning AI art prompts for Midjourney, DALL-E, and Stable Diffusion",
+                    category: "creative",
+                    price: 89000,
+                    rating: 4.8,
+                    reviews: 567,
+                    author: "ArtisticAI",
+                    image: "🎨",
+                    tags: ["Art", "Creative", "AI"],
+                    sales: 2340,
+                    featured: true
+                },
+                {
+                    id: 7,
+                    title: "YouTube Script Writer",
+                    description: "Generate engaging YouTube video scripts that keep viewers watching",
+                    category: "content",
+                    price: 119000,
+                    rating: 4.7,
+                    reviews: 234,
+                    author: "VideoMaster",
+                    image: "🎥",
+                    tags: ["YouTube", "Video", "Script"],
+                    sales: 1123,
+                    featured: false
+                },
+                {
+                    id: 8,
+                    title: "LinkedIn Post Creator",
+                    description: "Write professional LinkedIn posts that get engagement and generate leads",
+                    category: "social-media",
+                    price: 69000,
+                    rating: 4.8,
+                    reviews: 178,
+                    author: "B2BExpert",
+                    image: "💼",
+                    tags: ["LinkedIn", "B2B", "Professional"],
+                    sales: 765,
+                    featured: false
+                }
+            ];
+
+            const categories = [
+                { id: 'all', name: 'All Prompts', icon: '🎯' },
+                { id: 'content', name: 'Content Writing', icon: '📝' },
+                { id: 'social-media', name: 'Social Media', icon: '📱' },
+                { id: 'development', name: 'Development', icon: '💻' },
+                { id: 'ecommerce', name: 'E-Commerce', icon: '🛍️' },
+                { id: 'marketing', name: 'Marketing', icon: '📧' },
+                { id: 'creative', name: 'Creative', icon: '🎨' }
+            ];
+
+            // Functions
+            const addToCart = (prompt) => {
+                if (!cart.find(item => item.id === prompt.id)) {
+                    saveCart([...cart, prompt]);
+                }
+            };
+
+            const removeFromCart = (promptId) => {
+                saveCart(cart.filter(item => item.id !== promptId));
+            };
+
+            const toggleWishlist = (prompt) => {
+                if (wishlist.find(item => item.id === prompt.id)) {
+                    saveWishlist(wishlist.filter(item => item.id !== prompt.id));
+                } else {
+                    saveWishlist([...wishlist, prompt]);
+                }
+            };
+
+            const addReview = (promptId) => {
+                if (!user) {
+                    alert('Please login to add a review');
+                    return;
+                }
+                
+                const newReviews = { ...reviews };
+                if (!newReviews[promptId]) newReviews[promptId] = [];
+                
+                newReviews[promptId].push({
+                    user: user.name,
+                    rating: userReview.rating,
+                    comment: userReview.comment,
+                    date: new Date().toISOString()
+                });
+                
+                saveReviews(newReviews);
+                setUserReview({ rating: 5, comment: '' });
+            };
+
+            const handleCheckout = () => {
+                if (!user) {
+                    alert('Please login to checkout');
+                    setCurrentPage('auth');
+                    return;
+                }
+                setCurrentPage('checkout');
+            };
+
+            const handlePakasirPayment = () => {
+                const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+                
+                // TODO: Uncomment dan isi dengan API key & slug Pakasir kamu
+                /*
+                fetch('https://api.pakasir.com/v1/transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer YOUR_PAKASIR_API_KEY_HERE'
+                    },
+                    body: JSON.stringify({
+                        slug: 'YOUR_PAKASIR_SLUG_HERE',
+                        amount: totalAmount,
+                        customer_name: user.name,
+                        customer_email: user.email,
+                        items: cart.map(item => ({
+                            name: item.title,
+                            price: item.price,
+                            quantity: 1
+                        }))
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.payment_url) {
+                        window.location.href = data.payment_url;
+                    } else {
+                        alert('Error: ' + (data.message || 'Payment failed'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Payment error:', error);
+                    alert('Terjadi kesalahan saat memproses pembayaran');
+                });
+                */
+                
+                // Demo mode
+                alert(`🚀 PAKASIR PAYMENT\n\n✅ Total: Rp ${totalAmount.toLocaleString('id-ID')}\n\n⚠️ SETUP REQUIRED:\nEdit index.html dan uncomment Pakasir API call di function handlePakasirPayment (line ~345)\n\nIsi dengan:\n- YOUR_PAKASIR_API_KEY_HERE\n- YOUR_PAKASIR_SLUG_HERE\n\nSetelah setup, payment akan otomatis redirect ke Pakasir!`);
+            };
+
+            const login = (email, password) => {
+                const newUser = {
+                    id: Date.now(),
+                    name: email.split('@')[0],
+                    email: email,
+                    purchases: []
+                };
+                saveUser(newUser);
+                setCurrentPage('home');
+            };
+
+            const logout = () => {
+                storage.delete('orain-user');
+                setUser(null);
+                setCurrentPage('home');
+            };
+
+            // Filter and sort prompts
+            const filteredPrompts = prompts
+                .filter(p => {
+                    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                    const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+                    const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
+                    return matchesSearch && matchesCategory && matchesPrice;
+                })
+                .sort((a, b) => {
+                    switch(sortBy) {
+                        case 'price-low': return a.price - b.price;
+                        case 'price-high': return b.price - a.price;
+                        case 'rating': return b.rating - a.rating;
+                        case 'popular': return b.sales - a.sales;
+                        default: return 0;
+                    }
+                });
+
+            // Icon Components
+            const Icon = ({ icon: IconComponent, ...props }) => {
+                useEffect(() => {
+                    lucide.createIcons();
+                }, []);
+                return React.createElement('i', { 'data-lucide': IconComponent, ...props });
+            };
+
+            // Components
+            const Header = () => (
+                <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-b border-purple-500/20" style={{backdropFilter: 'blur(12px)'}}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-20">
+                            <div className="flex items-center gap-8">
+                                <button 
+                                    onClick={() => setCurrentPage('home')}
+                                    className="flex items-center gap-3 group"
+                                    style={{cursor: 'pointer'}}
+                                >
+                                    <div className="text-4xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent animate-gradient" style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+                                        ORAIN
+                                    </div>
+                                    <Icon icon="sparkles" style={{width: '20px', height: '20px', color: '#c084fc'}} />
+                                </button>
+                                
+                                <nav className="hidden md:flex items-center gap-6">
+                                    <button 
+                                        onClick={() => setCurrentPage('catalog')}
+                                        className="text-gray-300 hover:text-purple-400 transition-colors font-medium"
+                                        style={{cursor: 'pointer', background: 'none', border: 'none'}}
+                                    >
+                                        Catalog
+                                    </button>
+                                    <button className="text-gray-300 hover:text-purple-400 transition-colors font-medium" style={{cursor: 'pointer', background: 'none', border: 'none'}}>
+                                        Trending
+                                    </button>
+                                    <button className="text-gray-300 hover:text-purple-400 transition-colors font-medium" style={{cursor: 'pointer', background: 'none', border: 'none'}}>
+                                        New
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => setCurrentPage('wishlist')}
+                                    className="relative p-2 hover:bg-purple-500/10 rounded-lg transition-colors"
+                                    style={{cursor: 'pointer', background: 'transparent', border: 'none'}}
+                                >
+                                    <Icon icon="heart" style={{width: '20px', height: '20px', color: wishlist.length > 0 ? '#c084fc' : '#9ca3af', fill: wishlist.length > 0 ? '#c084fc' : 'none'}} />
+                                    {wishlist.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style={{fontSize: '10px'}}>
+                                            {wishlist.length}
+                                        </span>
+                                    )}
+                                </button>
+
+                                <button 
+                                    onClick={() => setCurrentPage('cart')}
+                                    className="relative p-2 hover:bg-purple-500/10 rounded-lg transition-colors"
+                                    style={{cursor: 'pointer', background: 'transparent', border: 'none'}}
+                                >
+                                    <Icon icon="shopping-cart" style={{width: '20px', height: '20px', color: '#9ca3af'}} />
+                                    {cart.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" style={{fontSize: '10px'}}>
+                                            {cart.length}
+                                        </span>
+                                    )}
+                                </button>
+
+                                {user ? (
+                                    <div className="flex items-center gap-3">
+                                        <button 
+                                            onClick={() => setCurrentPage('dashboard')}
+                                            className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-colors"
+                                            style={{cursor: 'pointer', border: 'none'}}
+                                        >
+                                            <Icon icon="user" style={{width: '16px', height: '16px', color: '#c084fc'}} />
+                                            <span className="text-sm font-medium text-purple-400 hidden sm:block">{user.name}</span>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => setCurrentPage('auth')}
+                                        className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                                        style={{cursor: 'pointer', border: 'none'}}
+                                    >
+                                        Login
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            );
+
+            const HomePage = () => (
+                <div className="min-h-screen pt-20" style={{minHeight: '100vh', paddingTop: '5rem'}}>
+                    {/* Hero Section */}
+                    <section className="relative overflow-hidden py-32 px-4" style={{padding: '8rem 1rem', position: 'relative', overflow: 'hidden'}}>
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-black to-pink-900/20" style={{position: 'absolute', inset: 0, background: 'linear-gradient(to bottom right, rgba(88, 28, 135, 0.2), #000, rgba(157, 23, 77, 0.2))'}} />
+                        <div className="absolute inset-0" style={{position: 'absolute', inset: 0}}>
+                            <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{position: 'absolute', top: '5rem', left: '5rem', width: '18rem', height: '18rem', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '9999px', filter: 'blur(80px)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'}} />
+                            <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{position: 'absolute', bottom: '5rem', right: '5rem', width: '24rem', height: '24rem', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '9999px', filter: 'blur(80px)', animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '1s'}} />
+                        </div>
+                        
+                        <div className="relative max-w-6xl mx-auto text-center" style={{position: 'relative', maxWidth: '72rem', margin: '0 auto', textAlign: 'center'}}>
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 rounded-full mb-8 border border-purple-500/30" style={{display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(168, 85, 247, 0.2)', borderRadius: '9999px', marginBottom: '2rem', border: '1px solid rgba(168, 85, 247, 0.3)'}}>
+                                <Icon icon="sparkles" style={{width: '16px', height: '16px', color: '#c084fc'}} />
+                                <span className="text-sm font-medium text-purple-300" style={{fontSize: '0.875rem', fontWeight: 500, color: '#d8b4fe'}}>Premium AI Prompts Marketplace</span>
+                            </div>
+                            
+                            <h1 className="text-6xl md:text-8xl font-black mb-6 leading-tight" style={{fontSize: 'clamp(3rem, 8vw, 6rem)', fontWeight: 900, marginBottom: '1.5rem', lineHeight: 1.2}}>
+                                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent animate-gradient" style={{background: 'linear-gradient(to right, #c084fc, #f9a8d4, #c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundSize: '200% 200%'}}>
+                                    Unlock AI Power
+                                </span>
+                                <br />
+                                <span className="text-white" style={{color: '#fff'}}>With Expert Prompts</span>
+                            </h1>
+                            
+                            <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed" style={{fontSize: '1.25rem', color: '#9ca3af', marginBottom: '3rem', maxWidth: '42rem', margin: '0 auto 3rem', lineHeight: 1.75}}>
+                                Discover, purchase, and master AI prompts crafted by professionals. Boost your productivity and creativity.
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center" style={{display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center'}}>
+                                <button 
+                                    onClick={() => setCurrentPage('catalog')}
+                                    className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all hover:scale-105"
+                                    style={{padding: '1rem 2rem', background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#fff', borderRadius: '0.75rem', fontWeight: 700, fontSize: '1.125rem', border: 'none', cursor: 'pointer', transition: 'all 0.3s'}}
+                                >
+                                    Explore Prompts
+                                </button>
+                                <button className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-xl font-bold text-lg hover:bg-white/10 transition-all" style={{padding: '1rem 2rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#fff', borderRadius: '0.75rem', fontWeight: 700, fontSize: '1.125rem', cursor: 'pointer', transition: 'all 0.3s'}}>
+                                    How It Works
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Featured Prompts */}
+                    <section className="py-24 px-4" style={{padding: '6rem 1rem'}}>
+                        <div className="max-w-7xl mx-auto" style={{maxWidth: '80rem', margin: '0 auto'}}>
+                            <div className="flex items-center justify-between mb-12" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3rem'}}>
+                                <div>
+                                    <h2 className="text-4xl font-black text-white mb-2" style={{fontSize: '2.25rem', fontWeight: 900, color: '#fff', marginBottom: '0.5rem'}}>Featured Prompts</h2>
+                                    <p className="text-gray-400" style={{color: '#9ca3af'}}>Top-rated prompts from our community</p>
+                                </div>
+                                <button 
+                                    onClick={() => setCurrentPage('catalog')}
+                                    className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors font-medium"
+                                    style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#c084fc', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer'}}
+                                >
+                                    View All <Icon icon="chevron-right" style={{width: '16px', height: '16px'}} />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
+                                {prompts.filter(p => p.featured).slice(0, 6).map((prompt) => (
+                                    <PromptCard key={prompt.id} prompt={prompt} />
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Stats Section */}
+                    <section className="py-24 px-4 bg-gradient-to-r from-purple-900/20 to-pink-900/20" style={{padding: '6rem 1rem', background: 'linear-gradient(to right, rgba(88, 28, 135, 0.2), rgba(157, 23, 77, 0.2))'}}>
+                        <div className="max-w-7xl mx-auto" style={{maxWidth: '80rem', margin: '0 auto'}}>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem'}}>
+                                <div className="text-center" style={{textAlign: 'center'}}>
+                                    <div className="text-4xl md:text-5xl font-black text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text mb-2" style={{fontSize: 'clamp(2.25rem, 5vw, 3rem)', fontWeight: 900, background: 'linear-gradient(to right, #c084fc, #f9a8d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '0.5rem'}}>
+                                        500+
+                                    </div>
+                                    <div className="text-gray-400 font-medium" style={{color: '#9ca3af', fontWeight: 500}}>Premium Prompts</div>
+                                </div>
+                                <div className="text-center" style={{textAlign: 'center'}}>
+                                    <div className="text-4xl md:text-5xl font-black text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text mb-2" style={{fontSize: 'clamp(2.25rem, 5vw, 3rem)', fontWeight: 900, background: 'linear-gradient(to right, #c084fc, #f9a8d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '0.5rem'}}>
+                                        10K+
+                                    </div>
+                                    <div className="text-gray-400 font-medium" style={{color: '#9ca3af', fontWeight: 500}}>Happy Customers</div>
+                                </div>
+                                <div className="text-center" style={{textAlign: 'center'}}>
+                                    <div className="text-4xl md:text-5xl font-black text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text mb-2" style={{fontSize: 'clamp(2.25rem, 5vw, 3rem)', fontWeight: 900, background: 'linear-gradient(to right, #c084fc, #f9a8d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '0.5rem'}}>
+                                        4.8★
+                                    </div>
+                                    <div className="text-gray-400 font-medium" style={{color: '#9ca3af', fontWeight: 500}}>Average Rating</div>
+                                </div>
+                                <div className="text-center" style={{textAlign: 'center'}}>
+                                    <div className="text-4xl md:text-5xl font-black text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text mb-2" style={{fontSize: 'clamp(2.25rem, 5vw, 3rem)', fontWeight: 900, background: 'linear-gradient(to right, #c084fc, #f9a8d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '0.5rem'}}>
+                                        24/7
+                                    </div>
+                                    <div className="text-gray-400 font-medium" style={{color: '#9ca3af', fontWeight: 500}}>Support</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            );
+
+            const PromptCard = ({ prompt }) => {
+                const isInWishlist = wishlist.find(item => item.id === prompt.id);
+                const isInCart = cart.find(item => item.id === prompt.id);
+
+                return (
+                    <div 
+                        className="group bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1"
+                        style={{background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(4px)', borderRadius: '1rem', border: '1px solid rgba(255, 255, 255, 0.1)', overflow: 'hidden', transition: 'all 0.3s', cursor: 'pointer'}}
+                    >
+                        <div className="p-6" style={{padding: '1.5rem'}}>
+                            <div className="flex items-start justify-between mb-4" style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem'}}>
+                                <div className="text-5xl" style={{fontSize: '3rem'}}>{prompt.image}</div>
+                                <button 
+                                    onClick={() => toggleWishlist(prompt)}
+                                    className="p-2 hover:bg-purple-500/20 rounded-lg transition-colors"
+                                    style={{padding: '0.5rem', background: 'transparent', border: 'none', borderRadius: '0.5rem', cursor: 'pointer'}}
+                                >
+                                    <Icon icon="heart" style={{width: '20px', height: '20px', color: isInWishlist ? '#c084fc' : '#9ca3af', fill: isInWishlist ? '#c084fc' : 'none'}} />
+                                </button>
+                            </div>
+
+                            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors" style={{fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem'}}>
+                                {prompt.title}
+                            </h3>
+                            
+                            <p className="text-gray-400 text-sm mb-4 line-clamp-2" style={{color: '#9ca3af', fontSize: '0.875rem', marginBottom: '1rem'}}>
+                                {prompt.description}
+                            </p>
+
+                            <div className="flex flex-wrap gap-2 mb-4" style={{display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem'}}>
+                                {prompt.tags.slice(0, 3).map((tag, index) => (
+                                    <span key={index} className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs font-medium" style={{padding: '0.25rem 0.75rem', background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 500}}>
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/10" style={{display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)'}}>
+                                <div className="flex items-center gap-1" style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
+                                    <Icon icon="star" style={{width: '16px', height: '16px', color: '#fbbf24', fill: '#fbbf24'}} />
+                                    <span className="text-sm font-bold text-white" style={{fontSize: '0.875rem', fontWeight: 700, color: '#fff'}}>{prompt.rating}</span>
+                                    <span className="text-xs text-gray-400" style={{fontSize: '0.75rem', color: '#9ca3af'}}>({prompt.reviews})</span>
+                                </div>
+                                <div className="flex items-center gap-1" style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
+                                    <Icon icon="download" style={{width: '16px', height: '16px', color: '#9ca3af'}} />
+                                    <span className="text-xs text-gray-400" style={{fontSize: '0.75rem', color: '#9ca3af'}}>{prompt.sales} sales</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                                <div>
+                                    <div className="text-2xl font-black text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text" style={{fontSize: '1.5rem', fontWeight: 900, background: 'linear-gradient(to right, #c084fc, #f9a8d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+                                        Rp {prompt.price.toLocaleString('id-ID')}
+                                    </div>
+                                    <div className="text-xs text-gray-500" style={{fontSize: '0.75rem', color: '#6b7280'}}>by {prompt.author}</div>
+                                </div>
+                                
+                                <div className="flex gap-2" style={{display: 'flex', gap: '0.5rem'}}>
+                                    <button 
+                                        onClick={() => {
+                                            setSelectedPrompt(prompt);
+                                            setCurrentPage('detail');
+                                        }}
+                                        className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                                        style={{padding: '0.5rem', background: 'rgba(255, 255, 255, 0.05)', border: 'none', borderRadius: '0.5rem', cursor: 'pointer'}}
+                                    >
+                                        <Icon icon="eye" style={{width: '20px', height: '20px', color: '#9ca3af'}} />
+                                    </button>
+                                    
+                                    {isInCart ? (
+                                        <button 
+                                            onClick={() => setCurrentPage('cart')}
+                                            className="px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors text-sm"
+                                            style={{padding: '0.5rem 1rem', background: '#a855f7', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer'}}
+                                        >
+                                            View Cart
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => addToCart(prompt)}
+                                            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all text-sm"
+                                            style={{padding: '0.5rem 1rem', background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#fff', border: 'none', borderRadius: '0.5rem', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer'}}
+                                        >
+                                            Add to Cart
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Simplified render - only showing critical pages for HTML version
+            const renderPage = () => {
+                switch(currentPage) {
+                    case 'home': return <HomePage />;
+                    case 'catalog': return <div style={{minHeight: '100vh', paddingTop: '5rem', color: '#fff', textAlign: 'center', padding: '10rem 2rem'}}><h1 style={{fontSize: '3rem', marginBottom: '1rem'}}>Catalog Coming Soon</h1><p style={{color: '#9ca3af'}}>Full catalog page available in production version</p></div>;
+                    case 'cart': return <div style={{minHeight: '100vh', paddingTop: '5rem', color: '#fff', textAlign: 'center', padding: '10rem 2rem'}}><h1 style={{fontSize: '3rem', marginBottom: '1rem'}}>Cart: {cart.length} items</h1><button onClick={() => setCurrentPage('home')} style={{padding: '1rem 2rem', background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#fff', border: 'none', borderRadius: '0.75rem', fontWeight: 700, cursor: 'pointer', marginTop: '2rem'}}>Back to Home</button></div>;
+                    case 'wishlist': return <div style={{minHeight: '100vh', paddingTop: '5rem', color: '#fff', textAlign: 'center', padding: '10rem 2rem'}}><h1 style={{fontSize: '3rem', marginBottom: '1rem'}}>Wishlist: {wishlist.length} items</h1><button onClick={() => setCurrentPage('home')} style={{padding: '1rem 2rem', background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#fff', border: 'none', borderRadius: '0.75rem', fontWeight: 700, cursor: 'pointer', marginTop: '2rem'}}>Back to Home</button></div>;
+                    case 'auth': return <div style={{minHeight: '100vh', paddingTop: '5rem', color: '#fff', textAlign: 'center', padding: '10rem 2rem'}}><h1 style={{fontSize: '3rem', marginBottom: '1rem'}}>Login</h1><button onClick={() => login('demo@orain.com', 'demo')} style={{padding: '1rem 2rem', background: 'linear-gradient(to right, #a855f7, #ec4899)', color: '#fff', border: 'none', borderRadius: '0.75rem', fontWeight: 700, cursor: 'pointer', marginTop: '2rem'}}>Demo Login</button></div>;
+                    case 'dashboard': return <div style={{minHeight: '100vh', paddingTop: '5rem', color: '#fff', textAlign: 'center', padding: '10rem 2rem'}}><h1 style={{fontSize: '3rem', marginBottom: '1rem'}}>Dashboard</h1><p style={{color: '#9ca3af', marginBottom: '2rem'}}>Welcome, {user?.name}!</p><button onClick={logout} style={{padding: '1rem 2rem', background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', border: 'none', borderRadius: '0.75rem', fontWeight: 700, cursor: 'pointer'}}>Logout</button></div>;
+                    default: return <HomePage />;
+                }
+            };
+
+            // Initialize Lucide icons after render
+            useEffect(() => {
+                lucide.createIcons();
+            });
+
+            return (
+                <div className="min-h-screen bg-black text-white" style={{minHeight: '100vh', background: '#000', color: '#fff'}}>
+                    <Header />
+                    {renderPage()}
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<OrainPlatform />);
+    </script>
+</body>
+</html>
